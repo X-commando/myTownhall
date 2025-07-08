@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ForumThread {
+  id             String   @id @default(uuid())
+  municipalityId String
+  title          String
+  content        String
+  author         String
+  upvotes        Int      @default(0)
+  downvotes      Int      @default(0)
+  tags           String[]
+  createdAt      DateTime @default(now())
+}
