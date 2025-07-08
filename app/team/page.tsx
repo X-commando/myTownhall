@@ -1,136 +1,132 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
-
-const teamMembers = [
-  {
-    id: 1,
-    name: 'Sarah Chen',
-    title: 'Founder & CEO',
-    image: 'https://images.pexels.com/photos/3771135/pexels-photo-3771135.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'Former city council member with 10+ years in public service. Passionate about making government accessible to everyone.'
-  },
-  {
-    id: 2,
-    name: 'Marcus Rodriguez',
-    title: 'Lead Developer',
-    image: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'Full-stack developer specializing in civic tech. Previously worked at Code for America on municipal data platforms.'
-  },
-  {
-    id: 3,
-    name: 'Elena Kowalski',
-    title: 'Data Analyst',
-    image: 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'Data scientist with expertise in government transparency. Masters in Public Policy from Georgetown University.'
-  },
-  {
-    id: 4,
-    name: 'James Thompson',
-    title: 'Community Outreach',
-    image: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'Community organizer and former journalist. Dedicated to connecting citizens with their local representatives.'
-  },
-  {
-    id: 5,
-    name: 'Priya Patel',
-    title: 'UX Designer',
-    image: 'https://images.pexels.com/photos/3756170/pexels-photo-3756170.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'User experience designer focused on accessible design. Previously designed digital services for the City of Boston.'
-  },
-  {
-    id: 6,
-    name: 'David Kim',
-    title: 'Legal Advisor',
-    image: 'https://images.pexels.com/photos/2182972/pexels-photo-2182972.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-    bio: 'Constitutional lawyer specializing in transparency laws. Ensures MyTownhall complies with all municipal regulations.'
-  }
-];
+import Image from 'next/image';
+import { Mail, Heart, Code, Users } from 'lucide-react';
+import founderPic from './founderpiclmfao.jpg';
 
 export default function Team() {
-  const [expandedMember, setExpandedMember] = useState<number | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const toggleExpanded = (id: number) => {
-    setExpandedMember(expandedMember === id ? null : id);
+  const founder = {
+    name: 'Aryan Ahuja',
+    title: 'Founder',
+    bio: 'Hi! I\'m a high school student trying to make a difference. Between swim practice and Model Congress competitions, I spend my time coding and thinking about how technology can help people engage with their local government.',
+    mission: 'I started MyTownhall because I believe everyone should be able to understand how their tax dollars are spent—without needing a political science degree.',
+    interests: [
+      { icon: Code, label: 'Coding', description: 'Learning new technologies' },
+      { icon: Users, label: 'Politics', description: 'Model Congress competitor' },
+      { icon: Heart, label: 'Community', description: 'Making government accessible' }
+    ]
   };
 
   return (
-    <div className="min-h-screen bg-background-light pt-20">
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-custom mb-6">
-            Our Team
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-20">
+      <div className="max-w-5xl mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="text-center mb-16 animate-fadeIn">
+          <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-6">
+            Behind <span className="font-medium text-emerald-600">MyTownhall</span>
           </h1>
-          <p className="text-xl text-primary-custom/80 max-w-3xl mx-auto">
-            Meet the passionate individuals working to make local government more transparent and accessible.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            A student project aimed at making local government more accessible to everyone
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {teamMembers.map((member, index) => (
-            <div
-              key={member.id}
-              className={`bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl animate-slide-up`}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                />
+        {/* Founder Section */}
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden animate-slideUp">
+            {/* Two Column Layout */}
+            <div className="grid md:grid-cols-5 gap-0">
+              {/* Image Column */}
+              <div className="md:col-span-2 relative h-80 md:h-auto bg-gradient-to-br from-slate-100 to-slate-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Image
+                    src={founderPic}
+                    alt={founder.name}
+                    fill
+                    className={`object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => setImageLoaded(true)}
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                    priority
+                  />
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-100 to-emerald-200">
+                      <div className="text-emerald-600">
+                        <div className="w-20 h-20 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-primary-custom">
-                      {member.name}
-                    </h3>
-                    <p className="text-primary text-sm font-medium uppercase tracking-wider">
-                      {member.title}
-                    </p>
-                  </div>
-                  
-                  <button
-                    onClick={() => toggleExpanded(member.id)}
-                    className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors duration-200"
-                    aria-label={expandedMember === member.id ? 'Collapse bio' : 'Expand bio'}
-                  >
-                    {expandedMember === member.id ? (
-                      <Minus className="w-4 h-4 text-primary" />
-                    ) : (
-                      <Plus className="w-4 h-4 text-primary" />
-                    )}
-                  </button>
+              {/* Content Column */}
+              <div className="md:col-span-3 p-8">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-semibold text-slate-900 mb-1">
+                    {founder.name}
+                  </h2>
+                  <p className="text-emerald-600 text-sm font-medium">
+                    {founder.title}
+                  </p>
                 </div>
                 
-                <div className={`transition-all duration-300 overflow-hidden ${
-                  expandedMember === member.id 
-                    ? 'max-h-32 opacity-100' 
-                    : 'max-h-0 opacity-0'
-                }`}>
-                  <p className="text-primary-custom/70 text-sm leading-relaxed">
-                    {member.bio}
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  {founder.bio}
+                </p>
+                
+                <div className="bg-emerald-50 rounded-lg p-4 mb-6">
+                  <p className="text-slate-700 text-sm italic">
+                    "{founder.mission}"
                   </p>
+                </div>
+                
+                {/* Interests */}
+                <div className="space-y-3">
+                  {founder.interests.map((interest, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <interest.icon className="w-4 h-4 text-slate-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{interest.label}</p>
+                        <p className="text-xs text-slate-500">{interest.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="text-center mt-16 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-primary mb-4">
-              Join Our Mission
-            </h2>
-            <p className="text-primary-custom/80 mb-6">
-              We're always looking for passionate individuals who want to make a difference in civic engagement.
+          {/* Personal Note */}
+          <div className="mt-12 bg-slate-50 rounded-2xl p-8 text-center">
+            <h3 className="text-xl font-semibold text-slate-900 mb-4">A Personal Note</h3>
+            <p className="text-slate-600 leading-relaxed mb-6 max-w-2xl mx-auto">
+              MyTownhall is still in its early stages, and I'm learning as I go. 
+              If you have feedback, suggestions, or just want to chat about making 
+              government more transparent, I'd love to hear from you!
             </p>
-            <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105">
-              View Open Positions
-            </button>
+            <a
+              href="mailto:aryan@mytownhall.org"
+              className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors group"
+            >
+              <Mail className="w-4 h-4" />
+              <span>Send me an email</span>
+              <span className="text-emerald-400 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </div>
+
+          {/* Future Vision */}
+          <div className="mt-12 text-center">
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+              <h3 className="text-xl font-semibold text-slate-900 mb-4">Looking Ahead</h3>
+              <p className="text-slate-600 leading-relaxed max-w-2xl mx-auto">
+                This project started as a way to combine my interests in technology and civic engagement. 
+                With your help and feedback, I hope MyTownhall can grow into a tool that truly makes 
+                local government more accessible for everyone.
+              </p>
+            </div>
           </div>
         </div>
       </div>
