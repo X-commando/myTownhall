@@ -24,7 +24,7 @@ export default function Footer() {
             </h3>
             <p className="text-slate-400 max-w-md leading-relaxed">
               Making local government transparent, accessible, and interactive. 
-              Empowering communities with the tools they need for civic engagement.
+              Empowering communities with the tools they need for civic engagement. (Currently in beta—all data is fictional and for demonstration purposes only.)
             </p>
           </div>
           
