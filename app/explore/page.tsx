@@ -19,10 +19,17 @@ export default function Explore() {
 
   const [showError, setShowError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     setMunicipalities(mockMunicipalities);
   }, [setMunicipalities]);
+
+  useEffect(() => {
+    if (shouldRedirect && selectedMunicipality) {
+      window.location.href = `/towns/${selectedMunicipality.slug}`;
+    }
+  }, [shouldRedirect, selectedMunicipality]);
 
   const filteredMunicipalities = getFilteredMunicipalities();
 
@@ -58,10 +65,10 @@ export default function Explore() {
       setShowError(true);
       return;
     }
-    
+
     setIsLoading(true);
     setTimeout(() => {
-      window.location.href = `/towns/${selectedMunicipality.slug}`;
+      setShouldRedirect(true); // safe client-side redirect
     }, 500);
   };
 
@@ -260,20 +267,20 @@ export default function Explore() {
           scrollbar-width: thin;
           scrollbar-color: #475569 #1e293b;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-track {
           background: #1e293b;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background-color: #475569;
           border-radius: 4px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background-color: #64748b;
         }
