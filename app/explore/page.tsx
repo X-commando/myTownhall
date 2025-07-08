@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { Search, MapPin, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { mockMunicipalities } from '@/lib/mockData';
-import MapComponent from '@/components/MapComponent';
+import dynamic from 'next/dynamic';
+const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false });
+
 
 export default function Explore() {
   const { 
