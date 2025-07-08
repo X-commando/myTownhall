@@ -39,7 +39,7 @@ export default function Home() {
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}>
             <h1 className="text-7xl md:text-9xl font-extralight text-slate-900 mb-8 tracking-tight">
-              My<span className="font-light text-emerald-600">Townhall</span>
+              My<span className="font-light text-emerald-600">Townhall (beta-testing)</span>
             </h1>
           </div>
           
