@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-// This creates a connection to your filing cabinet
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // This is the road for GETTING all towns
 export async function GET() {

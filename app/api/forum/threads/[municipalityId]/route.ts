@@ -6,12 +6,13 @@ const prisma = new PrismaClient();
 // Get all threads for ONE SPECIFIC TOWN
 export async function GET(
   request: Request,
-  { params }: { params: { municipalityId: string } }
+  { params }: { params: Promise<{ municipalityId: string }> }
 ) {
   try {
+    const { municipalityId } = await params;
     const threads = await prisma.forumThread.findMany({
       where: {
-        municipalityId: params.municipalityId  // Only get threads for THIS town
+        municipalityId: municipalityId  // Only get threads for THIS town
       },
       include: {
         comments: true,

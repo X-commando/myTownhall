@@ -5,14 +5,15 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    console.log('Looking for town with slug:', params.slug);
+    const { slug } = await params;
+    console.log('Looking for town with slug:', slug);
     
     const town = await prisma.municipality.findUnique({
       where: {
-        slug: params.slug
+        slug: slug
       },
       include: {
         budgets: {
