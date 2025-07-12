@@ -1,9 +1,13 @@
-import { mockMunicipalities } from '@/lib/mockData';
+import { getTowns } from '@/lib/api';
 import TownClientPage from './TownClientPage';
 
 export async function generateStaticParams() {
-  return mockMunicipalities.map((municipality) => ({
-    slug: municipality.slug,
+  // Get all towns from the database
+  const towns = await getTowns();
+  
+  // Return the slugs for static generation
+  return towns.map((town: any) => ({
+    slug: town.slug,
   }));
 }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Search, MapPin, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import { mockMunicipalities } from '@/lib/mockData';
+import { getTowns } from '@/lib/api';
 import dynamic from 'next/dynamic';
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { 
@@ -26,8 +26,27 @@ export default function Explore() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setMunicipalities(mockMunicipalities);
-  }, [setMunicipalities]);
+  // Load real towns from database
+  const loadTowns = async () => {
+    const towns = await getTowns();
+    
+    // Transform the data to match our format
+    const formattedTowns = towns.map((town: any) => ({
+      id: town.id,
+      name: town.name,
+      state: town.state,
+      zipCode: town.zipCode,
+      population: town.population,
+      isServiced: town.isServiced,
+      coordinates: [town.latitude, town.longitude],
+      slug: town.slug
+    }));
+    
+    setMunicipalities(formattedTowns);
+  };
+  
+  loadTowns();
+}, [setMunicipalities]);
 
   const filteredMunicipalities = getFilteredMunicipalities();
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Calendar, DollarSign, MessageSquare, Users, TrendingUp, Clock } from 'lucide-react';
-import { mockMunicipalities, mockBudgetData, mockMeetings, mockForumThreads } from '@/lib/mockData';
+import { getTown } from '@/lib/api';
 import BudgetChart from '@/components/BudgetChart';
 import ForumSection from '@/components/ForumSection';
 import MeetingsSection from '@/components/MeetingsSection';
@@ -15,10 +15,49 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
   const [municipality, setMunicipality] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    const found = mockMunicipalities.find(m => m.slug === slug);
-    setMunicipality(found);
-  }, [slug]);
+const [budgetData, setBudgetData] = useState<any>(null);
+const [meetings, setMeetings] = useState<any[]>([]);
+const [forumThreads, setForumThreads] = useState<any[]>([]);
+
+useEffect(() => {
+  const loadTownData = async () => {
+    const townData = await getTown(slug);
+    
+    if (townData) {
+      // Format the municipality data
+      const formattedTown = {
+        id: townData.id,
+        name: townData.name,
+        state: townData.state,
+        zipCode: townData.zipCode,
+        population: townData.population,
+        isServiced: townData.isServiced,
+        coordinates: [townData.latitude, townData.longitude],
+        slug: townData.slug
+      };
+      
+      setMunicipality(formattedTown);
+      
+      // Set budget data
+      if (townData.budgets && townData.budgets.length > 0) {
+        setBudgetData({
+          year: townData.budgets[0].year,
+          totalBudget: townData.budgets[0].totalBudget,
+          categories: townData.budgets[0].categories,
+          municipalityId: townData.id
+        });
+      }
+      
+      // Set meetings
+      setMeetings(townData.meetings || []);
+      
+      // Set forum threads
+      setForumThreads(townData.forumThreads || []);
+    }
+  };
+  
+  loadTownData();
+}, [slug]);
 
   if (!municipality) {
     return (
@@ -31,10 +70,7 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
     );
   }
 
-  const budgetData = mockBudgetData.find(b => b.municipalityId === municipality.id);
-  const meetings = mockMeetings.filter(m => m.municipalityId === municipality.id);
-  const forumThreads = mockForumThreads.filter(t => t.municipalityId === municipality.id);
-
+ 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: TrendingUp },
     { id: 'budget', name: 'Budget', icon: DollarSign },

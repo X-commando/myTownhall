@@ -3,18 +3,106 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// This is like a folder for each town
+model Municipality {
+  id          String   @id @default(uuid())
+  name        String
+  state       String
+  zipCode     String
+  population  Int
+  isServiced  Boolean  @default(false)
+  latitude    Float
+  longitude   Float
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // These connect to other folders
+  budgets     Budget[]
+  meetings    Meeting[]
+  forumThreads ForumThread[]
+}
+
+// This is like a page about money for each town
+model Budget {
+  id             String   @id @default(uuid())
+  year           Int
+  totalBudget    Float
+  municipalityId String
+  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  categories     BudgetCategory[]
+  createdAt      DateTime @default(now())
+}
+
+// This shows where the money goes
+model BudgetCategory {
+  id       String  @id @default(uuid())
+  name     String
+  amount   Float
+  color    String
+  budgetId String
+  budget   Budget  @relation(fields: [budgetId], references: [id])
+}
+
+// This is for town meetings
+model Meeting {
+  id             String   @id @default(uuid())
+  title          String
+  date           DateTime
+  time           String
+  committee      String
+  status         String   // 'upcoming' or 'past'
+  municipalityId String
+  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  agendaItems    AgendaItem[]
+  createdAt      DateTime @default(now())
+}
+
+// This is what they talk about in meetings
+model AgendaItem {
+  id        String  @id @default(uuid())
+  content   String
+  order     Int
+  meetingId String
+  meeting   Meeting @relation(fields: [meetingId], references: [id])
+}
+
+// This is for community discussions
 model ForumThread {
   id             String   @id @default(uuid())
-  municipalityId String
   title          String
   content        String
   author         String
   upvotes        Int      @default(0)
   downvotes      Int      @default(0)
-  tags           String[]
+  municipalityId String
+  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  comments       Comment[]
+  tags           ThreadTag[]
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// This is for replies to discussions
+model Comment {
+  id          String      @id @default(uuid())
+  content     String
+  author      String
+  upvotes     Int         @default(0)
+  downvotes   Int         @default(0)
+  threadId    String
+  thread      ForumThread @relation(fields: [threadId], references: [id])
+  createdAt   DateTime    @default(now())
+}
+
+// This is for organizing discussions
+model ThreadTag {
+  id       String      @id @default(uuid())
+  name     String
+  threadId String
+  thread   ForumThread @relation(fields: [threadId], references: [id])
 }
