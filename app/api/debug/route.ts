@@ -6,13 +6,13 @@ export async function GET() {
     const municipalities = await prisma.municipality.findMany();
     return NextResponse.json({
       count: municipalities.length,
-      municipalities: municipalities.map(m => ({
+      municipalities: municipalities.map((m: any) => ({
         id: m.id,
         name: m.name,
         slug: m.slug
       }))
     });
   } catch (error) {
-    return NextResponse.json({ error: error }, { status: 500 });
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

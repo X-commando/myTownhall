@@ -6,6 +6,7 @@ import { getTown } from '@/lib/api';
 import BudgetChart from '@/components/BudgetChart';
 import ForumSection from '@/components/ForumSection';
 import MeetingsSection from '@/components/MeetingsSection';
+import TownLoading from '@/components/TownLoading';
 
 interface TownClientPageProps {
   slug: string;
@@ -14,63 +15,94 @@ interface TownClientPageProps {
 export default function TownClientPage({ slug }: TownClientPageProps) {
   const [municipality, setMunicipality] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const [budgetData, setBudgetData] = useState<any>(null);
-const [meetings, setMeetings] = useState<any[]>([]);
-const [forumThreads, setForumThreads] = useState<any[]>([]);
+  const [budgetData, setBudgetData] = useState<any>(null);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [forumThreads, setForumThreads] = useState<any[]>([]);
 
-useEffect(() => {
-  const loadTownData = async () => {
-    const townData = await getTown(slug);
-    
-    if (townData) {
-      // Format the municipality data
-      const formattedTown = {
-        id: townData.id,
-        name: townData.name,
-        state: townData.state,
-        zipCode: townData.zipCode,
-        population: townData.population,
-        isServiced: townData.isServiced,
-        coordinates: [townData.latitude, townData.longitude],
-        slug: townData.slug
-      };
+  useEffect(() => {
+    const loadTownData = async () => {
+      setIsLoading(true);
+      setError(null);
       
-      setMunicipality(formattedTown);
-      
-      // Set budget data
-      if (townData.budgets && townData.budgets.length > 0) {
-        setBudgetData({
-          year: townData.budgets[0].year,
-          totalBudget: townData.budgets[0].totalBudget,
-          categories: townData.budgets[0].categories,
-          municipalityId: townData.id
-        });
+      try {
+        const townData = await getTown(slug);
+        
+        if (townData) {
+          // Format the municipality data
+          const formattedTown = {
+            id: townData.id,
+            name: townData.name,
+            state: townData.state,
+            zipCode: townData.zipCode,
+            population: townData.population,
+            isServiced: townData.isServiced,
+            coordinates: [townData.latitude, townData.longitude],
+            slug: townData.slug
+          };
+          
+          setMunicipality(formattedTown);
+          
+          // Set budget data
+          if (townData.budgets && townData.budgets.length > 0) {
+            setBudgetData({
+              year: townData.budgets[0].year,
+              totalBudget: townData.budgets[0].totalBudget,
+              categories: townData.budgets[0].categories,
+              municipalityId: townData.id
+            });
+          }
+          
+          // Set meetings
+          setMeetings(townData.meetings || []);
+          
+          // Set forum threads
+          setForumThreads(townData.forumThreads || []);
+        } else {
+          setError('Municipality not found');
+        }
+      } catch (err) {
+        console.error('Error loading town data:', err);
+        setError('Failed to load municipality data');
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Set meetings
-      setMeetings(townData.meetings || []);
-      
-      // Set forum threads
-      setForumThreads(townData.forumThreads || []);
-    }
-  };
-  
-  loadTownData();
-}, [slug]);
+    };
+    
+    loadTownData();
+  }, [slug]);
 
-  if (!municipality) {
+  // Show loading state
+  if (isLoading) {
+    return <TownLoading />;
+  }
+
+  // Show error state
+  if (error || !municipality) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-primary-custom mb-4">Municipality Not Found</h1>
-          <p className="text-gray-600">The requested municipality could not be found.</p>
+          <h1 className="text-2xl font-bold text-primary-custom mb-4">
+            {error || 'Municipality Not Found'}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {error 
+              ? 'There was an error loading the municipality data. Please try again later.'
+              : 'The requested municipality could not be found.'}
+          </p>
+          <a 
+            href="/explore" 
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Back to Explore
+          </a>
         </div>
       </div>
     );
   }
 
- 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: TrendingUp },
     { id: 'budget', name: 'Budget', icon: DollarSign },
