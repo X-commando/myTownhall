@@ -23,30 +23,50 @@ export default function Explore() {
   } = useStore();
 
   const [showError, setShowError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
-  // Load real towns from database
-  const loadTowns = async () => {
-    const towns = await getTowns();
+    // Load real towns from database
+    const loadTowns = async () => {
+      try {
+        setIsLoading(true);
+        setDataError(null);
+        console.log('Fetching towns from API...');
+        
+        const towns = await getTowns();
+        console.log('Received towns:', towns);
+        
+        if (!towns || towns.length === 0) {
+          console.warn('No towns received from API');
+          setDataError('No municipalities found in database');
+          return;
+        }
+        
+        // Transform the data to match our format
+        const formattedTowns = towns.map((town: any) => ({
+          id: town.id,
+          name: town.name,
+          state: town.state,
+          zipCode: town.zipCode,
+          population: town.population,
+          isServiced: town.isServiced,
+          coordinates: [town.latitude, town.longitude],
+          slug: town.slug
+        }));
+        
+        console.log('Formatted towns:', formattedTowns);
+        setMunicipalities(formattedTowns);
+      } catch (error) {
+        console.error('Error loading towns:', error);
+        setDataError('Failed to load municipalities. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Transform the data to match our format
-    const formattedTowns = towns.map((town: any) => ({
-      id: town.id,
-      name: town.name,
-      state: town.state,
-      zipCode: town.zipCode,
-      population: town.population,
-      isServiced: town.isServiced,
-      coordinates: [town.latitude, town.longitude],
-      slug: town.slug
-    }));
-    
-    setMunicipalities(formattedTowns);
-  };
-  
-  loadTowns();
-}, [setMunicipalities]);
+    loadTowns();
+  }, [setMunicipalities]);
 
   const filteredMunicipalities = getFilteredMunicipalities();
 
@@ -88,6 +108,39 @@ export default function Explore() {
       window.location.href = `/towns/${selectedMunicipality.slug}`;
     }, 500);
   };
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Loading municipalities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if data failed to load
+  if (dataError) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-white text-xl font-semibold mb-2">Error Loading Data</h2>
+          <p className="text-slate-400 mb-6">{dataError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -168,51 +221,59 @@ export default function Explore() {
 
             {/* Municipality List */}
             <div className="flex-1 flex flex-col min-h-0 px-4 pb-4">
-              <h3 className="text-slate-400 text-sm font-medium mb-3 px-4">Available Communities</h3>
+              <h3 className="text-slate-400 text-sm font-medium mb-3 px-4">
+                Available Communities ({municipalities.length})
+              </h3>
               <div className="flex-1 overflow-y-auto scrollbar-custom">
                 <div className="space-y-2 pr-2">
-                  {filteredMunicipalities.map((municipality) => (
-                    <button
-                      key={municipality.id}
-                      onClick={() => handleMunicipalitySelect(municipality)}
-                      className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
-                        selectedMunicipality?.id === municipality.id 
-                          ? 'bg-emerald-500/20 border border-emerald-500/30' 
-                          : 'hover:bg-slate-700/50 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className={`font-medium ${
-                            selectedMunicipality?.id === municipality.id
-                              ? 'text-emerald-400'
-                              : 'text-white'
-                          }`}>
-                            {municipality.name}
-                          </h3>
-                          <p className={`text-sm mt-1 ${
-                            selectedMunicipality?.id === municipality.id
-                              ? 'text-emerald-400/70'
-                              : 'text-slate-400'
-                          }`}>
-                            {municipality.state} • {municipality.population.toLocaleString()} residents
-                          </p>
+                  {filteredMunicipalities.length > 0 ? (
+                    filteredMunicipalities.map((municipality) => (
+                      <button
+                        key={municipality.id}
+                        onClick={() => handleMunicipalitySelect(municipality)}
+                        className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
+                          selectedMunicipality?.id === municipality.id 
+                            ? 'bg-emerald-500/20 border border-emerald-500/30' 
+                            : 'hover:bg-slate-700/50 border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className={`font-medium ${
+                              selectedMunicipality?.id === municipality.id
+                                ? 'text-emerald-400'
+                                : 'text-white'
+                            }`}>
+                              {municipality.name}
+                            </h3>
+                            <p className={`text-sm mt-1 ${
+                              selectedMunicipality?.id === municipality.id
+                                ? 'text-emerald-400/70'
+                                : 'text-slate-400'
+                            }`}>
+                              {municipality.state} • {municipality.population.toLocaleString()} residents
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2.5 h-2.5 rounded-full ${
+                              municipality.isServiced ? 'bg-emerald-400' : 'bg-orange-400'
+                            }`} />
+                            <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                              municipality.isServiced
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                            }`}>
+                              {municipality.isServiced ? 'Available' : 'Soon'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2.5 h-2.5 rounded-full ${
-                            municipality.isServiced ? 'bg-emerald-400' : 'bg-orange-400'
-                          }`} />
-                          <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                            municipality.isServiced
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                              : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          }`}>
-                            {municipality.isServiced ? 'Available' : 'Soon'}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">No municipalities found</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
