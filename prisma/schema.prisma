@@ -8,125 +8,92 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Main municipality model
-model Municipality {
-  id          String   @id @default(uuid())
-  name        String
-  state       String
-  zipCode     String
-  population  Int
-  isServiced  Boolean  @default(false)
-  latitude    Float
-  longitude   Float
-  slug        String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  budgets      Budget[]
-  meetings     Meeting[]
-  forumThreads ForumThread[]
-
-  @@index([slug])
-  @@index([isServiced])
+model AgendaItem {
+  id        String  @id
+  content   String
+  order     Int
+  meetingId String
+  Meeting   Meeting @relation(fields: [meetingId], references: [id])
 }
 
-// Budget model
 model Budget {
-  id             String           @id @default(uuid())
+  id             String           @id
   year           Int
   totalBudget    Float
   municipalityId String
-  municipality   Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  categories     BudgetCategory[]
   createdAt      DateTime         @default(now())
-
-  @@unique([municipalityId, year])
-  @@index([municipalityId])
+  Municipality   Municipality     @relation(fields: [municipalityId], references: [id])
+  BudgetCategory BudgetCategory[]
 }
 
-// Budget category model
 model BudgetCategory {
-  id       String @id @default(uuid())
+  id       String @id
   name     String
   amount   Float
   color    String
   budgetId String
-  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-
-  @@index([budgetId])
+  Budget   Budget @relation(fields: [budgetId], references: [id])
 }
 
-// Meeting model
-model Meeting {
-  id             String       @id @default(uuid())
-  title          String
-  date           DateTime
-  time           String
-  committee      String
-  status         String       // 'upcoming' or 'past'
-  municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  agendaItems    AgendaItem[]
-  createdAt      DateTime     @default(now())
-
-  @@index([municipalityId])
-  @@index([status])
-  @@index([date])
+model Comment {
+  id          String      @id
+  content     String
+  author      String
+  upvotes     Int         @default(0)
+  downvotes   Int         @default(0)
+  threadId    String
+  createdAt   DateTime    @default(now())
+  ForumThread ForumThread @relation(fields: [threadId], references: [id])
 }
 
-// Agenda item model
-model AgendaItem {
-  id        String  @id @default(uuid())
-  content   String  @db.Text
-  order     Int
-  meetingId String
-  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-
-  @@index([meetingId])
-}
-
-// Forum thread model
 model ForumThread {
-  id             String       @id @default(uuid())
+  id             String       @id
   title          String
-  content        String       @db.Text
+  content        String
   author         String
   upvotes        Int          @default(0)
   downvotes      Int          @default(0)
   municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  comments       Comment[]
-  tags           ThreadTag[]
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  @@index([municipalityId])
-  @@index([createdAt])
+  updatedAt      DateTime
+  Comment        Comment[]
+  Municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  ThreadTag      ThreadTag[]
 }
 
-// Comment model
-model Comment {
-  id        String      @id @default(uuid())
-  content   String      @db.Text
-  author    String
-  upvotes   Int         @default(0)
-  downvotes Int         @default(0)
-  threadId  String
-  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
-
-  @@index([threadId])
-  @@index([createdAt])
+model Meeting {
+  id             String       @id
+  title          String
+  date           DateTime
+  time           String
+  committee      String
+  status         String
+  municipalityId String
+  createdAt      DateTime     @default(now())
+  AgendaItem     AgendaItem[]
+  Municipality   Municipality @relation(fields: [municipalityId], references: [id])
 }
 
-// Thread tag model
+model Municipality {
+  id          String        @id
+  name        String
+  state       String
+  zipCode     String
+  population  Int
+  isServiced  Boolean       @default(false)
+  latitude    Float
+  longitude   Float
+  slug        String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  Budget      Budget[]
+  ForumThread ForumThread[]
+  Meeting     Meeting[]
+}
+
 model ThreadTag {
-  id       String      @id @default(uuid())
-  name     String
-  threadId String
-  thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-
-  @@index([threadId])
-  @@index([name])
+  id          String      @id
+  name        String
+  threadId    String
+  ForumThread ForumThread @relation(fields: [threadId], references: [id])
 }
