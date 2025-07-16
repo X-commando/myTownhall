@@ -3,7 +3,7 @@
 // Get all towns
 export async function getTowns() {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/towns`);
     if (!response.ok) throw new Error('Failed to fetch towns');
     return await response.json();
@@ -16,7 +16,7 @@ export async function getTowns() {
 // Get one specific town
 export async function getTown(slug: string) {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/towns/${slug}`);
     if (!response.ok) throw new Error('Failed to fetch town');
     return await response.json();
@@ -35,7 +35,7 @@ export async function createForumThread(data: {
   tags: string[];
 }) {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/forum/threads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,7 +56,7 @@ export async function vote(data: {
   voteType: 'up' | 'down';
 }) {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/forum/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ export async function addComment(data: {
   threadId: string;
 }) {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/forum/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
