@@ -63,6 +63,12 @@ export async function POST(request: Request) {
         downvotes: comment.downvotes
       });
     }
+    
+    // This should never be reached due to validation above, but TypeScript requires it
+    return NextResponse.json(
+      { error: 'Invalid request' },
+      { status: 400 }
+    );
   } catch (error) {
     console.error('Error voting:', error);
     return NextResponse.json(
