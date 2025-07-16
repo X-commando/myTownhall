@@ -3,11 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// This is like a folder for each town
+// Main municipality model
 model Municipality {
   id          String   @id @default(uuid())
   name        String
@@ -21,88 +22,111 @@ model Municipality {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // These connect to other folders
-  budgets     Budget[]
-  meetings    Meeting[]
+  // Relations
+  budgets      Budget[]
+  meetings     Meeting[]
   forumThreads ForumThread[]
+
+  @@index([slug])
+  @@index([isServiced])
 }
 
-// This is like a page about money for each town
+// Budget model
 model Budget {
-  id             String   @id @default(uuid())
+  id             String           @id @default(uuid())
   year           Int
   totalBudget    Float
   municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  municipality   Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
   categories     BudgetCategory[]
-  createdAt      DateTime @default(now())
+  createdAt      DateTime         @default(now())
+
+  @@unique([municipalityId, year])
+  @@index([municipalityId])
 }
 
-// This shows where the money goes
+// Budget category model
 model BudgetCategory {
-  id       String  @id @default(uuid())
+  id       String @id @default(uuid())
   name     String
   amount   Float
   color    String
   budgetId String
-  budget   Budget  @relation(fields: [budgetId], references: [id])
+  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@index([budgetId])
 }
 
-// This is for town meetings
+// Meeting model
 model Meeting {
-  id             String   @id @default(uuid())
+  id             String       @id @default(uuid())
   title          String
   date           DateTime
   time           String
   committee      String
-  status         String   // 'upcoming' or 'past'
+  status         String       // 'upcoming' or 'past'
   municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
   agendaItems    AgendaItem[]
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
+
+  @@index([municipalityId])
+  @@index([status])
+  @@index([date])
 }
 
-// This is what they talk about in meetings
+// Agenda item model
 model AgendaItem {
   id        String  @id @default(uuid())
-  content   String
+  content   String  @db.Text
   order     Int
   meetingId String
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
 }
 
-// This is for community discussions
+// Forum thread model
 model ForumThread {
-  id             String   @id @default(uuid())
+  id             String       @id @default(uuid())
   title          String
-  content        String
+  content        String       @db.Text
   author         String
-  upvotes        Int      @default(0)
-  downvotes      Int      @default(0)
+  upvotes        Int          @default(0)
+  downvotes      Int          @default(0)
   municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id])
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
   comments       Comment[]
   tags           ThreadTag[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([municipalityId])
+  @@index([createdAt])
 }
 
-// This is for replies to discussions
+// Comment model
 model Comment {
-  id          String      @id @default(uuid())
-  content     String
-  author      String
-  upvotes     Int         @default(0)
-  downvotes   Int         @default(0)
-  threadId    String
-  thread      ForumThread @relation(fields: [threadId], references: [id])
-  createdAt   DateTime    @default(now())
+  id        String      @id @default(uuid())
+  content   String      @db.Text
+  author    String
+  upvotes   Int         @default(0)
+  downvotes Int         @default(0)
+  threadId  String
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+
+  @@index([threadId])
+  @@index([createdAt])
 }
 
-// This is for organizing discussions
+// Thread tag model
 model ThreadTag {
   id       String      @id @default(uuid())
   name     String
   threadId String
-  thread   ForumThread @relation(fields: [threadId], references: [id])
+  thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+  @@index([name])
 }
