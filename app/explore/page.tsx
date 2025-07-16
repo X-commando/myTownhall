@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, ArrowRight, Loader2, Building2 } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Loader2, Building2, Star } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { getTowns } from '@/lib/api';
 import dynamic from 'next/dynamic';
@@ -226,14 +226,56 @@ export default function Explore() {
               </h3>
               <div className="flex-1 overflow-y-auto scrollbar-custom">
                 <div className="space-y-2 pr-2">
-                  {filteredMunicipalities.length > 0 ? (
+                  {/* Show selected municipality prominently if no search results */}
+                  {filteredMunicipalities.length === 0 && selectedMunicipality && (
+                    <div className="mb-4">
+                      <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-xl p-4 shadow-lg">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <Star className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-emerald-400 font-semibold text-lg">
+                              {selectedMunicipality.name}
+                            </h3>
+                            <p className="text-emerald-400/70 text-sm">
+                              {selectedMunicipality.state} • {selectedMunicipality.population.toLocaleString()} residents
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2.5 h-2.5 rounded-full ${
+                              selectedMunicipality.isServiced ? 'bg-emerald-400' : 'bg-orange-400'
+                            }`} />
+                            <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                              selectedMunicipality.isServiced
+                                ? 'bg-emerald-500/30 text-emerald-400 border border-emerald-500/50' 
+                                : 'bg-orange-500/30 text-orange-400 border border-orange-500/50'
+                            }`}>
+                              {selectedMunicipality.isServiced ? 'Available' : 'Soon'}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleMunicipalitySelect(selectedMunicipality)}
+                            className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Show filtered results or all municipalities */}
+                  {(filteredMunicipalities.length > 0 || !selectedMunicipality) ? (
                     filteredMunicipalities.map((municipality) => (
                       <button
                         key={municipality.id}
                         onClick={() => handleMunicipalitySelect(municipality)}
                         className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
                           selectedMunicipality?.id === municipality.id 
-                            ? 'bg-emerald-500/20 border border-emerald-500/30' 
+                            ? 'bg-emerald-500/20 border border-emerald-500/30 shadow-lg' 
                             : 'hover:bg-slate-700/50 border border-transparent'
                         }`}
                       >
