@@ -28,8 +28,8 @@ export default function ForumSection({ threads, municipalityId }: ForumSectionPr
   const filteredThreads = selectedTag === 'all' 
     ? threads 
     : threads.filter(thread => 
-        thread.tags && thread.tags.some((tag: any) => 
-          (typeof tag === 'string' ? tag : tag.name) === selectedTag
+        thread.ThreadTag && thread.ThreadTag.some((tag: any) => 
+          tag.name === selectedTag
         )
       );
 
@@ -171,15 +171,15 @@ export default function ForumSection({ threads, municipalityId }: ForumSectionPr
                   </p>
                   
                   {/* Tags */}
-                  {thread.tags && thread.tags.length > 0 && (
+                  {thread.ThreadTag && thread.ThreadTag.length > 0 && (
                     <div className="flex items-center flex-wrap gap-2 mb-4">
-                      {thread.tags.map((tag: any, index: number) => (
+                      {thread.ThreadTag.map((tag: any, index: number) => (
                         <span
                           key={tag.id || `${thread.id}-tag-${index}`}
                           className="flex items-center space-x-1 bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium"
                         >
                           <Tag className="w-3 h-3" />
-                          <span>{typeof tag === 'string' ? tag : tag.name}</span>
+                          <span>{tag.name}</span>
                         </span>
                       ))}
                     </div>
@@ -197,7 +197,7 @@ export default function ForumSection({ threads, municipalityId }: ForumSectionPr
                     </div>
                     <div className="flex items-center space-x-1">
                       <MessageSquare className="w-4 h-4" />
-                      <span>{thread.comments?.length || 0} comments</span>
+                      <span>{thread.Comment?.length || 0} comments</span>
                     </div>
                   </div>
                 </div>

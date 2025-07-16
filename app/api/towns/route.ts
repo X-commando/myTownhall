@@ -1,77 +1,103 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// This is the road for GETTING all towns
+// GET all towns
 export async function GET() {
   try {
-    // Go to the filing cabinet and get all municipalities
     const towns = await prisma.municipality.findMany({
       include: {
-        // Also grab their budgets
-        budgets: {
+        Budget: {
           include: {
-            categories: true
+            BudgetCategory: true
+          },
+          orderBy: {
+            year: 'desc'
           }
         },
-        // And their meetings
-        meetings: {
+        Meeting: {
           include: {
-            agendaItems: {
+            AgendaItem: {
               orderBy: {
                 order: 'asc'
               }
             }
+          },
+          orderBy: {
+            date: 'desc'
           }
         },
-        // And their forum threads
-        forumThreads: {
+        ForumThread: {
           include: {
-            comments: true,
-            tags: true
-          }
+            Comment: true,
+            ThreadTag: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 10 // Limit to latest 10 threads per town
         }
+      },
+      orderBy: {
+        name: 'asc'
       }
     });
 
-    // Send the towns back to whoever asked
     return NextResponse.json(towns);
   } catch (error) {
-    // If something goes wrong, say "oops!"
     console.error('Error fetching towns:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch towns' },
+      { error: 'Failed to fetch towns', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
 }
 
-// This is the road for ADDING a new town
+// POST new town
 export async function POST(request: Request) {
   try {
-    // Get the information about the new town
     const body = await request.json();
     
-    // Save it to the filing cabinet
+    // Validate required fields
+    if (!body.name || !body.state || !body.zipCode || !body.population || 
+        body.coordinates === undefined || !body.slug) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Check if slug already exists
+    const existingTown = await prisma.municipality.findUnique({
+      where: { slug: body.slug }
+    });
+
+    if (existingTown) {
+      return NextResponse.json(
+        { error: 'A town with this slug already exists' },
+        { status: 409 }
+      );
+    }
+
     const newTown = await prisma.municipality.create({
       data: {
+        id: crypto.randomUUID(),
         name: body.name,
         state: body.state,
         zipCode: body.zipCode,
-        population: body.population,
+        population: parseInt(body.population),
         isServiced: body.isServiced || false,
-        latitude: body.coordinates[0],
-        longitude: body.coordinates[1],
-        slug: body.slug
+        latitude: parseFloat(body.coordinates[0]),
+        longitude: parseFloat(body.coordinates[1]),
+        slug: body.slug,
+        updatedAt: new Date()
       }
     });
 
-    // Tell them it worked!
     return NextResponse.json(newTown, { status: 201 });
   } catch (error) {
-    // If something goes wrong, say "oops!"
     console.error('Error creating town:', error);
     return NextResponse.json(
-      { error: 'Failed to create town' },
+      { error: 'Failed to create town', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

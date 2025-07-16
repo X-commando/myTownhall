@@ -2,8 +2,21 @@
 
 import { useState } from 'react';
 import { Calendar, Clock, Users, FileText } from 'lucide-react';
-import { Meeting } from '@/lib/mockData';
 import { format } from 'date-fns';
+
+interface Meeting {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  committee: string;
+  status: string;
+  AgendaItem: Array<{
+    id: string;
+    content: string;
+    order: number;
+  }>;
+}
 
 interface MeetingsSectionProps {
   meetings: Meeting[];
@@ -73,7 +86,7 @@ export default function MeetingsSection({ meetings }: MeetingsSectionProps) {
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{format(meeting.date, 'MMM dd, yyyy')}</span>
+                          <span>{format(new Date(meeting.date), 'MMM dd, yyyy')}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="w-4 h-4" />
@@ -120,7 +133,7 @@ export default function MeetingsSection({ meetings }: MeetingsSectionProps) {
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{format(meeting.date, 'MMM dd, yyyy')}</span>
+                          <span>{format(new Date(meeting.date), 'MMM dd, yyyy')}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="w-4 h-4" />
@@ -158,7 +171,7 @@ export default function MeetingsSection({ meetings }: MeetingsSectionProps) {
                   <div className="flex items-center space-x-4 text-gray-600">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{format(selectedMeeting.date, 'MMMM dd, yyyy')}</span>
+                      <span>{format(new Date(selectedMeeting.date), 'MMMM dd, yyyy')}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="w-4 h-4" />
@@ -181,12 +194,18 @@ export default function MeetingsSection({ meetings }: MeetingsSectionProps) {
               <div>
                 <h4 className="text-lg font-semibold text-primary-custom mb-3">Agenda</h4>
                 <ul className="space-y-2">
-                  {selectedMeeting.agenda.map((item, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <span className="text-primary font-medium">{index + 1}.</span>
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
+                  {selectedMeeting.AgendaItem && selectedMeeting.AgendaItem.length > 0 ? (
+                    selectedMeeting.AgendaItem
+                      .sort((a, b) => a.order - b.order)
+                      .map((item, index) => (
+                        <li key={item.id} className="flex items-start space-x-3">
+                          <span className="text-primary font-medium">{item.order}.</span>
+                          <span className="text-gray-700">{item.content}</span>
+                        </li>
+                      ))
+                  ) : (
+                    <li className="text-gray-500">No agenda items available</li>
+                  )}
                 </ul>
               </div>
             </div>

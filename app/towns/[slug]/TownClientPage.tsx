@@ -45,21 +45,21 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
           
           setMunicipality(formattedTown);
           
-          // Set budget data
-          if (townData.budgets && townData.budgets.length > 0) {
+          // Set budget data - fix the field names to match API response
+          if (townData.Budget && townData.Budget.length > 0) {
             setBudgetData({
-              year: townData.budgets[0].year,
-              totalBudget: townData.budgets[0].totalBudget,
-              categories: townData.budgets[0].categories,
+              year: townData.Budget[0].year,
+              totalBudget: townData.Budget[0].totalBudget,
+              categories: townData.Budget[0].BudgetCategory, // Fix: use BudgetCategory instead of categories
               municipalityId: townData.id
             });
           }
           
-          // Set meetings
-          setMeetings(townData.meetings || []);
+          // Set meetings - fix the field name
+          setMeetings(townData.Meeting || []); // Fix: use Meeting instead of meetings
           
-          // Set forum threads
-          setForumThreads(townData.forumThreads || []);
+          // Set forum threads - fix the field name
+          setForumThreads(townData.ForumThread || []); // Fix: use ForumThread instead of forumThreads
         } else {
           setError('Municipality not found');
         }
@@ -133,7 +133,7 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4">
           <nav className="flex space-x-8">
             {tabs.map((tab) => {

@@ -3,7 +3,8 @@
 // Get all towns
 export async function getTowns() {
   try {
-    const response = await fetch('/api/towns');
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const response = await fetch(`${baseUrl}/api/towns`);
     if (!response.ok) throw new Error('Failed to fetch towns');
     return await response.json();
   } catch (error) {
@@ -15,7 +16,8 @@ export async function getTowns() {
 // Get one specific town
 export async function getTown(slug: string) {
   try {
-    const response = await fetch(`/api/towns/${slug}`);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const response = await fetch(`${baseUrl}/api/towns/${slug}`);
     if (!response.ok) throw new Error('Failed to fetch town');
     return await response.json();
   } catch (error) {
@@ -33,7 +35,8 @@ export async function createForumThread(data: {
   tags: string[];
 }) {
   try {
-    const response = await fetch('/api/forum/threads', {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const response = await fetch(`${baseUrl}/api/forum/threads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -53,7 +56,8 @@ export async function vote(data: {
   voteType: 'up' | 'down';
 }) {
   try {
-    const response = await fetch('/api/forum/vote', {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const response = await fetch(`${baseUrl}/api/forum/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -73,7 +77,8 @@ export async function addComment(data: {
   threadId: string;
 }) {
   try {
-    const response = await fetch('/api/forum/comments', {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    const response = await fetch(`${baseUrl}/api/forum/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

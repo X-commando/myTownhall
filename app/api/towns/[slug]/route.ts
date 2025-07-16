@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
@@ -9,6 +7,14 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    
+    if (!slug) {
+      return NextResponse.json(
+        { error: 'Slug parameter is required' },
+        { status: 400 }
+      );
+    }
+
     console.log('Looking for town with slug:', slug);
     
     const town = await prisma.municipality.findUnique({
@@ -16,38 +22,60 @@ export async function GET(
         slug: slug
       },
       include: {
-        budgets: {
+        Budget: {
           include: {
-            categories: true
+            BudgetCategory: {
+              orderBy: {
+                amount: 'desc'
+              }
+            }
+          },
+          orderBy: {
+            year: 'desc'
           }
         },
-        meetings: {
+        Meeting: {
           include: {
-            agendaItems: {
+            AgendaItem: {
               orderBy: {
                 order: 'asc'
               }
             }
+          },
+          orderBy: {
+            date: 'desc'
           }
         },
-        forumThreads: {
+        ForumThread: {
           include: {
-            comments: true,
-            tags: true
+            Comment: {
+              orderBy: {
+                createdAt: 'desc'
+              }
+            },
+            ThreadTag: true
+          },
+          orderBy: {
+            createdAt: 'desc'
           }
         }
       }
     });
 
     if (!town) {
-      console.log('Town not found. Available slugs:');
+      // Get all available slugs for debugging
       const allTowns = await prisma.municipality.findMany({
         select: { slug: true, name: true }
       });
-      console.log(allTowns);
+      
+      console.log('Town not found. Available slugs:', allTowns);
       
       return NextResponse.json(
-        { error: 'Town not found', availableSlugs: allTowns },
+        { 
+          error: 'Town not found', 
+          availableSlugs: allTowns,
+          requestedSlug: slug
+        },
         { status: 404 }
       );
     }
@@ -57,7 +85,53 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching town:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch town' },
+      { error: 'Failed to fetch town', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+// UPDATE town
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params;
+    const body = await request.json();
+
+    const updatedTown = await prisma.municipality.update({
+      where: { slug },
+      data: body
+    });
+
+    return NextResponse.json(updatedTown);
+  } catch (error) {
+    console.error('Error updating town:', error);
+    return NextResponse.json(
+      { error: 'Failed to update town', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE town
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params;
+
+    await prisma.municipality.delete({
+      where: { slug }
+    });
+
+    return NextResponse.json({ message: 'Town deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting town:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete town', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
