@@ -8,6 +8,8 @@ import ForumSection from '@/components/ForumSection';
 import MeetingsSection from '@/components/MeetingsSection';
 import TownLoading from '@/components/TownLoading';
 import Link from 'next/link';
+import MunicipalityChatbot from '@/components/MunicipalityChatbot';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface TownClientPageProps {
   slug: string;
@@ -22,6 +24,7 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
   const [budgetData, setBudgetData] = useState<any>(null);
   const [meetings, setMeetings] = useState<any[]>([]);
   const [forumThreads, setForumThreads] = useState<any[]>([]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const loadTownData = async () => {
@@ -444,6 +447,40 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
           <ForumSection threads={forumThreads} municipalityId={municipality.id} />
         )}
       </div>
+      {/* Place the chatbot floating button and chat window here */}
+      <TooltipProvider>
+        <MunicipalityChatbot
+          municipalityData={{
+            name: municipality.name,
+            state: municipality.state,
+            population: municipality.population,
+            zipCode: municipality.zipCode,
+            budget: budgetData ? {
+              year: budgetData.year,
+              totalBudget: budgetData.totalBudget,
+              categories: budgetData.categories || [],
+            } : undefined,
+            meetings: meetings.map(m => ({
+              title: m.title,
+              date: m.date,
+              time: m.time,
+              committee: m.committee,
+              status: m.status,
+              agendaItems: m.AgendaItem || [],
+            })),
+            forumThreads: forumThreads.map(t => ({
+              title: t.title,
+              content: t.content,
+              author: t.author,
+              upvotes: t.upvotes,
+              downvotes: t.downvotes,
+              createdAt: t.createdAt,
+            })),
+          }}
+          isOpen={isChatOpen}
+          onToggle={() => setIsChatOpen(open => !open)}
+        />
+      </TooltipProvider>
     </div>
   );
 }
