@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, ArrowRight, Loader2, Building2, Star } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Loader2, Building2, Star, Filter } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { getTowns } from '@/lib/api';
 import dynamic from 'next/dynamic';
@@ -10,6 +10,8 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-slate-900 animate-pulse" />
 });
+
+type FilterType = 'all' | 'available' | 'coming-soon';
 
 export default function Explore() {
   const { 
@@ -25,6 +27,7 @@ export default function Explore() {
   const [showError, setShowError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   useEffect(() => {
     // Load real towns from database
@@ -70,19 +73,46 @@ export default function Explore() {
 
   const filteredMunicipalities = getFilteredMunicipalities();
 
+  // Apply additional filter based on activeFilter
+  const getFilteredAndSearchedMunicipalities = () => {
+    let filtered = filteredMunicipalities;
+    
+    if (activeFilter === 'available') {
+      filtered = filtered.filter(m => m.isServiced);
+    } else if (activeFilter === 'coming-soon') {
+      filtered = filtered.filter(m => !m.isServiced);
+    }
+    
+    return filtered;
+  };
+
+  const displayMunicipalities = getFilteredAndSearchedMunicipalities();
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     setShowError(false);
     
     if (query) {
-      const filtered = municipalities.filter(m =>
+      // First apply the active filter, then search within that filtered set
+      let searchableMunicipalities = municipalities;
+      
+      if (activeFilter === 'available') {
+        searchableMunicipalities = municipalities.filter(m => m.isServiced);
+      } else if (activeFilter === 'coming-soon') {
+        searchableMunicipalities = municipalities.filter(m => !m.isServiced);
+      }
+      
+      const filtered = searchableMunicipalities.filter(m =>
         m.name.toLowerCase().includes(query.toLowerCase()) ||
         m.state.toLowerCase().includes(query.toLowerCase()) ||
         m.zipCode.includes(query)
       );
+      
       if (filtered.length > 0) {
         setSelectedMunicipality(filtered[0]);
+      } else {
+        setSelectedMunicipality(null);
       }
     } else {
       setSelectedMunicipality(null);
@@ -107,6 +137,13 @@ export default function Explore() {
     setTimeout(() => {
       window.location.href = `/towns/${selectedMunicipality.slug}`;
     }, 500);
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
+    // Clear selection when changing filters
+    setSelectedMunicipality(null);
+    setSearchQuery('');
   };
 
   // Show loading state while fetching data
@@ -183,6 +220,40 @@ export default function Explore() {
                 />
               </div>
 
+              {/* Filter Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleFilterChange('all')}
+                  className={`px-3 py-1 text-xs rounded-full font-medium transition-all ${
+                    activeFilter === 'all'
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  All ({municipalities.length})
+                </button>
+                <button
+                  onClick={() => handleFilterChange('available')}
+                  className={`px-3 py-1 text-xs rounded-full font-medium transition-all ${
+                    activeFilter === 'available'
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  Available ({municipalities.filter(m => m.isServiced).length})
+                </button>
+                <button
+                  onClick={() => handleFilterChange('coming-soon')}
+                  className={`px-3 py-1 text-xs rounded-full font-medium transition-all ${
+                    activeFilter === 'coming-soon'
+                      ? 'bg-orange-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  Coming Soon ({municipalities.filter(m => !m.isServiced).length})
+                </button>
+              </div>
+
               {/* Launch Button */}
               <button
                 onClick={handleLaunch}
@@ -222,12 +293,12 @@ export default function Explore() {
             {/* Municipality List */}
             <div className="flex-1 flex flex-col min-h-0 px-4 pb-4">
               <h3 className="text-slate-400 text-sm font-medium mb-3 px-4">
-                Available Communities ({municipalities.length})
+                {activeFilter === 'all' ? 'Available Communities' : activeFilter === 'available' ? 'Available Communities' : 'Coming Soon'} ({displayMunicipalities.length})
               </h3>
               <div className="flex-1 overflow-y-auto scrollbar-custom">
                 <div className="space-y-2 pr-2">
                   {/* Show selected municipality prominently if no search results */}
-                  {filteredMunicipalities.length === 0 && selectedMunicipality && (
+                  {displayMunicipalities.length === 0 && selectedMunicipality && (
                     <div className="mb-4">
                       <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-xl p-4 shadow-lg">
                         <div className="flex items-center gap-3 mb-3">
@@ -268,8 +339,8 @@ export default function Explore() {
                   )}
                   
                   {/* Show filtered results or all municipalities */}
-                  {(filteredMunicipalities.length > 0 || !selectedMunicipality) ? (
-                    filteredMunicipalities.map((municipality) => (
+                  {(displayMunicipalities.length > 0 || !selectedMunicipality) ? (
+                    displayMunicipalities.map((municipality) => (
                       <button
                         key={municipality.id}
                         onClick={() => handleMunicipalitySelect(municipality)}

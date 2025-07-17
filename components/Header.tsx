@@ -63,7 +63,7 @@ export default function Header() {
       </header>
 
       {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 z-40 transition-all duration-500 ${
+      <div className={`fixed inset-0 z-[9999] transition-all duration-500 ${
         isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}>
         <div 

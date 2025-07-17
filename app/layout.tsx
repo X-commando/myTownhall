@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'MyTownhall - Transparent Local Government',
   description: 'Making local government transparent, accessible, and interactive for all.',
+  icons: {
+    icon: '/townhallLogo.png',
+  },
 };
 
 export default function RootLayout({

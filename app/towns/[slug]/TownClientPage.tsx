@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calendar, DollarSign, MessageSquare, Users, TrendingUp, Clock } from 'lucide-react';
+import { Calendar, DollarSign, MessageSquare, Users, TrendingUp, Clock, ArrowRight, Eye, Activity, TrendingDown } from 'lucide-react';
 import { getTown } from '@/lib/api';
 import BudgetChart from '@/components/BudgetChart';
 import ForumSection from '@/components/ForumSection';
 import MeetingsSection from '@/components/MeetingsSection';
 import TownLoading from '@/components/TownLoading';
+import Link from 'next/link';
 
 interface TownClientPageProps {
   slug: string;
@@ -74,15 +75,87 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
     loadTownData();
   }, [slug]);
 
+  // Calculate budget trends and stats
+  const getBudgetStats = () => {
+    if (!budgetData) return null;
+    
+    const totalBudget = budgetData.totalBudget;
+    const budgetInMillions = (totalBudget / 1000000).toFixed(1);
+    const perCapita = (totalBudget / municipality.population).toFixed(0);
+    
+    return {
+      total: budgetInMillions,
+      perCapita: perCapita,
+      year: budgetData.year
+    };
+  };
+
+  // Get recent activity (mixed content)
+  const getRecentActivity = () => {
+    const activities: any[] = [];
+    
+    // Add recent forum threads
+    forumThreads.slice(0,2).forEach(thread => {
+      activities.push({
+        type: 'forum',
+        title: thread.title,
+        content: thread.content.substring(0, 80) + '...',
+        author: thread.author,
+        upvotes: thread.upvotes,
+        date: new Date(thread.createdAt),
+        data: thread
+      });
+    });
+    
+    // Add upcoming meetings
+    const upcomingMeetings = meetings.filter(m => m.status === 'upcoming').slice(0, 2);
+    upcomingMeetings.forEach(meeting => {
+      activities.push({
+        type: 'meeting',
+        title: meeting.title,
+        content: `${meeting.committee} • ${new Date(meeting.date).toLocaleDateString()}`,
+        author: 'City Council',
+        date: new Date(meeting.date),
+        data: meeting
+      });
+    });
+    
+    // Sort by date (most recent first)
+    return activities.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 4);
+  };
+
   // Show loading state
   if (isLoading) {
-    return <TownLoading />;
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-full max-w-4xl px-4 pt-8">
+          {/* Breadcrumbs and Back Button Skeleton */}
+          <div className="flex items-center gap-2 mb-6 animate-pulse">
+            <div className="h-4 w-20 bg-gray-200 rounded" />
+            <div className="h-4 w-4 bg-gray-200 rounded-full" />
+            <div className="h-4 w-32 bg-gray-200 rounded" />
+          </div>
+        </div>
+        <TownLoading />
+      </div>
+    );
   }
 
   // Show error state
   if (error || !municipality) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-full max-w-4xl px-4 pt-8">
+          {/* Breadcrumbs and Back Button */}
+          <div className="flex items-center gap-2 mb-6">
+            <Link href="/explore" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+              <ArrowRight className="w-4 h-4 rotate-180" />
+              Back to Explore
+            </Link>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-500">Not Found</span>
+          </div>
+        </div>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-primary-custom mb-4">
             {error || 'Municipality Not Found'}
@@ -92,12 +165,12 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
               ? 'There was an error loading the municipality data. Please try again later.'
               : 'The requested municipality could not be found.'}
           </p>
-          <a 
-            href="/explore" 
+          <button 
+            onClick={() => window.location.reload()} 
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Back to Explore
-          </a>
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -110,8 +183,24 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
     { id: 'forum', name: 'Community Forum', icon: MessageSquare }
   ];
 
+  const budgetStats = getBudgetStats();
+  const recentActivity = getRecentActivity();
+  const upcomingMeetingsCount = meetings.filter(m => m.status === 'upcoming').length;
+  const totalThreads = forumThreads.length;
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Breadcrumbs and Back Button */}
+      <div className="w-full max-w-7xl mx-auto px-4 pt-8">
+        <div className="flex items-center gap-2 mb-6">
+          <Link href="/explore" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            Back to Explore
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-500">{municipality.name}</span>
+        </div>
+      </div>
       {/* Header */}
       <div className="bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -168,8 +257,13 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Budget</p>
                     <p className="text-2xl font-bold text-primary-custom">
-                      ${budgetData ? (budgetData.totalBudget / 1000000).toFixed(1) + 'M' : 'N/A'}
+                      ${budgetStats ? `${budgetStats.total}M` : 'N/A'}
                     </p>
+                    {budgetStats && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        ${budgetStats.perCapita} per capita • {budgetStats.year}
+                      </p>
+                    )}
                   </div>
                   <DollarSign className="w-8 h-8 text-primary" />
                 </div>
@@ -178,8 +272,9 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
               <div className="bg-white p-6 rounded-xl shadow-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Threads</p>
-                    <p className="text-2xl font-bold text-primary-custom">{forumThreads.length}</p>
+                    <p className="text-sm font-medium text-gray-600">Community Activity</p>
+                    <p className="text-2xl font-bold text-primary-custom">{totalThreads}</p>
+                    <p className="text-xs text-gray-500 mt-1">Active discussions</p>
                   </div>
                   <MessageSquare className="w-8 h-8 text-primary" />
                 </div>
@@ -189,9 +284,8 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Upcoming Meetings</p>
-                    <p className="text-2xl font-bold text-primary-custom">
-                      {meetings.filter(m => m.status === 'upcoming').length}
-                    </p>
+                    <p className="text-2xl font-bold text-primary-custom">{upcomingMeetingsCount}</p>
+                    <p className="text-xs text-gray-500 mt-1">Next 30 days</p>
                   </div>
                   <Calendar className="w-8 h-8 text-primary" />
                 </div>
@@ -204,34 +298,133 @@ export default function TownClientPage({ slug }: TownClientPageProps) {
                     <p className="text-2xl font-bold text-primary-custom">
                       {municipality.population.toLocaleString()}
                     </p>
+                    <p className="text-xs text-gray-50 mt-1">
+                      {upcomingMeetingsCount} upcoming meetings
+                    </p>
                   </div>
                   <Users className="w-8 h-8 text-primary" />
                 </div>
               </div>
             </div>
 
-            {/* Mini Budget Chart */}
-            {budgetData && (
+            {/* Budget Summary Card */}
+            {budgetStats && (
               <div className="bg-white p-6 rounded-xl shadow-lg">
-                <h2 className="text-xl font-bold text-primary-custom mb-4">Budget Overview</h2>
-                <BudgetChart data={budgetData} />
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-primary-custom">Budget Summary</h2>
+                  <button 
+                    onClick={() => setActiveTab('budget')}
+                    className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                  >
+                    View Full Budget
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-primary-custom">${budgetStats.total}M</p>
+                    <p className="text-sm text-gray-600">Total Budget</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-primary-custom">${budgetStats.perCapita}</p>
+                    <p className="text-sm text-gray-600">Per Capita</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <p className="text-2xl font-bold text-primary-custom">{budgetStats.year}</p>
+                    <p className="text-sm text-gray-600">Fiscal Year</p>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Recent Forum Activity */}
+            {/* Recent Activity Feed */}
             <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h2 className="text-xl font-bold text-primary-custom mb-4">Recent Community Activity</h2>
-              <div className="space-y-4">
-                {forumThreads.slice(0, 3).map((thread) => (
-                  <div key={thread.id} className="border-l-4 border-primary pl-4">
-                    <h3 className="font-semibold text-primary-custom">{thread.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{thread.content.substring(0, 100)}...</p>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                      <span>by {thread.author}</span>
-                      <span>{thread.upvotes} upvotes</span>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-primary-custom">Recent Activity</h2>
+                <button 
+                  onClick={() => setActiveTab('forum')}
+                  className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  View All Activity
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {recentActivity.length > 0 ? (
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        activity.type === 'forum' ? 'bg-blue-100' : 'bg-green-100'
+                      }`}>
+                        {activity.type === 'forum' ? (
+                          <MessageSquare className="w-5 h-5 text-blue-600" />
+                        ) : (
+                          <Calendar className="w-5 h-5 text-green-600" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-primary-custom">{activity.title}</h3>
+                        <p className="text-sm text-gray-600">{activity.content}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                          <span>{activity.author}</span>
+                          {activity.type === 'forum' && (
+                            <span className="flex items-center gap-1">
+                              <TrendingUp className="w-3 h-3" />
+                              {activity.upvotes} upvotes
+                            </span>
+                          )}
+                          <span>{activity.date.toLocaleDateString()}</span>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No recent activity</p>
+                  <p className="text-sm text-gray-400 mt-1">Be the first to start a discussion!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white p-6 rounded-xl shadow-lg">
+              <h2 className="text-xl font-bold text-primary-custom mb-4">Quick Actions</h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                <button 
+                  onClick={() => setActiveTab('budget')}
+                  className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <DollarSign className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="font-medium text-primary-custom">View Budget Details</p>
+                    <p className="text-sm text-gray-600">Explore spending breakdown</p>
                   </div>
-                ))}
+                </button>
+                
+                <button 
+                  onClick={() => setActiveTab('meetings')}
+                  className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <Calendar className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="font-medium text-primary-custom">Browse Meetings</p>
+                    <p className="text-sm text-gray-600">View upcoming and past meetings</p>
+                  </div>
+                </button>
+                
+                <button 
+                  onClick={() => setActiveTab('forum')}
+                  className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <MessageSquare className="w-6 h-6 text-primary" />
+                  <div>
+                    <p className="font-medium text-primary-custom">Join Discussion</p>
+                    <p className="text-sm text-gray-600">Participate in community forum</p>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
