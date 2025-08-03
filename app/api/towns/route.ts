@@ -3,21 +3,33 @@ import { prisma } from '@/lib/prisma';
 
 // GET all towns
 export async function GET() {
-  try {
-    const towns = await prisma.municipality.findMany({
-      orderBy: {
-        name: 'asc'
-      }
-    });
+  const maxRetries = 3;
+  let lastError: any;
 
-    return NextResponse.json(towns);
-  } catch (error) {
-    console.error('Error fetching towns:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch towns', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const towns = await prisma.municipality.findMany({
+        orderBy: {
+          name: 'asc'
+        }
+      });
+
+      return NextResponse.json(towns);
+    } catch (error) {
+      console.error(`Error fetching towns (attempt ${attempt}):`, error);
+      lastError = error;
+      
+      if (attempt < maxRetries) {
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
   }
+
+  return NextResponse.json(
+    { error: 'Failed to fetch towns after multiple attempts', details: lastError instanceof Error ? lastError.message : 'Unknown error' },
+    { status: 500 }
+  );
 }
 
 // POST new town
