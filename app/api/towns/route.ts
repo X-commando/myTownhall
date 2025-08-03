@@ -5,38 +5,6 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const towns = await prisma.municipality.findMany({
-      include: {
-        Budget: {
-          include: {
-            BudgetCategory: true
-          },
-          orderBy: {
-            year: 'desc'
-          }
-        },
-        Meeting: {
-          include: {
-            AgendaItem: {
-              orderBy: {
-                order: 'asc'
-              }
-            }
-          },
-          orderBy: {
-            date: 'desc'
-          }
-        },
-        ForumThread: {
-          include: {
-            Comment: true,
-            ThreadTag: true
-          },
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 10 // Limit to latest 10 threads per town
-        }
-      },
       orderBy: {
         name: 'asc'
       }
