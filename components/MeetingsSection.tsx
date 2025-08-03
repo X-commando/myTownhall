@@ -11,6 +11,7 @@ interface Meeting {
   time: string;
   committee: string;
   status: string;
+  summary?: string;
   AgendaItem: Array<{
     id: string;
     content: string;
@@ -190,6 +191,15 @@ export default function MeetingsSection({ meetings }: MeetingsSectionProps) {
                   ×
                 </button>
               </div>
+
+              {selectedMeeting.summary && (
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-primary-custom mb-3">Meeting Summary</h4>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-gray-700 leading-relaxed">{selectedMeeting.summary}</p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h4 className="text-lg font-semibold text-primary-custom mb-3">Agenda</h4>

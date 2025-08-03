@@ -68,6 +68,7 @@ model Meeting {
   time           String
   committee      String
   status         String
+  summary        String?      // Meeting summary/minutes
   municipalityId String
   createdAt      DateTime     @default(now())
   AgendaItem     AgendaItem[]

@@ -121,7 +121,7 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
           {/* Comments Section */}
           <div>
             <h3 className="text-lg font-semibold text-primary-custom mb-4">
-              Comments ({thread.comments?.length || 0})
+              Comments ({thread.Comment?.length || 0})
             </h3>
 
             {/* Comment Form */}
@@ -148,8 +148,8 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
 
             {/* Comments List */}
             <div className="space-y-4">
-              {thread.comments && thread.comments.length > 0 ? (
-                thread.comments.map((comment: any) => (
+              {thread.Comment && thread.Comment.length > 0 ? (
+                thread.Comment.map((comment: any) => (
                   <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
