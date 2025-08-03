@@ -1,0 +1,52 @@
+{
+  "municipality": {
+    "name": "Princeton",
+    "state": "NJ",
+    "zipCode": "08540",
+    "population": 31000,
+    "latitude": 40.3573,
+    "longitude": -74.6672,
+    "slug": "princeton-nj"
+  },
+  "budget": {
+    "year": 2024,
+    "totalBudget": 70000000,
+    "categories": [
+      {
+        "name": "Public Safety",
+        "amount": 18000000
+      },
+      {
+        "name": "Public Works",
+        "amount": 12000000
+      },
+      {
+        "name": "Health & Human Services",
+        "amount": 8000000
+      },
+      {
+        "name": "Parks & Recreation",
+        "amount": 4000000
+      },
+      {
+        "name": "General Government",
+        "amount": 9000000
+      },
+      {
+        "name": "Other",
+        "amount": 19000000
+      }
+    ]
+  },
+  "meetings": [
+    {
+      "name": "Mayor and Council of Princeton",
+      "date": "7/28/2025",
+      "time": "7:00 PM",
+      "location": "Main Council Chambers",
+      "detailsLink": null,
+      "agendaLink": null,
+      "minutesLink": null
+    }
+  ]
+}

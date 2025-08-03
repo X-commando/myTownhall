@@ -188,21 +188,44 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div className="transform hover:scale-110 transition-transform duration-300 group">
-              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">12</div>
+              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">22</div>
               <div className="text-emerald-100">Active Municipalities</div>
             </div>
             <div className="transform hover:scale-110 transition-transform duration-300 group">
-              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">2.5k</div>
-              <div className="text-emerald-100">Engaged Citizens</div>
+              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">30k+</div>
+              <div className="text-emerald-100">Community Interactions</div>
             </div>
             <div className="transform hover:scale-110 transition-transform duration-300 group">
-              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">85%</div>
-              <div className="text-emerald-100">Engagement Increase</div>
+              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">410</div>
+              <div className="text-emerald-100">Forum Discussions</div>
             </div>
             <div className="transform hover:scale-110 transition-transform duration-300 group">
-              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">24/7</div>
-              <div className="text-emerald-100">Access to Information</div>
+              <div className="text-5xl font-bold text-white mb-2 group-hover:text-emerald-100 transition-colors">256</div>
+              <div className="text-emerald-100">Public Meetings</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Coming Soon Section */}
+      <section className="py-16 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-light text-slate-900 mb-4">
+              <span className="text-emerald-600 font-medium">12 More Towns</span> Coming Soon
+            </h3>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              We're expanding to bring transparency and community engagement to more municipalities across the region.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+            {['Belle Mead', 'Skillman', 'Rocky Hill', 'Griggstown', 'Pluckemin', 'Basking Ridge', 
+              'Liberty Corner', 'Lyons', 'Pottersville', 'Whitehouse', 'Whitehouse Station', 'Three Bridges'].map((town, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-slate-700">{town}</div>
+                <div className="text-xs text-slate-500 mt-1">Coming Soon</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -220,7 +243,7 @@ export default function Home() {
             Ready to transform your <span className="text-emerald-400 font-medium">local democracy?</span>
           </h2>
           <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
-            Join thousands of citizens who are making their communities more transparent, accessible, and engaged.
+            Join thousands of citizens across 22 active municipalities in the NJ-NY-PA region, with 12 more coming soon. Making local government transparent, accessible, and engaged.
           </p>
           <Link
             href="/explore"

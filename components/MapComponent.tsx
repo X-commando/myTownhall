@@ -33,11 +33,12 @@ export default function MapComponent({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    // Initialize map centered on NJ-NY-PA region where our municipalities are located
     const map = L.map(mapRef.current, {
       zoomControl: false,
       attributionControl: false,
       preferCanvas: true
-    }).setView([39.8283, -98.5795], 4);
+    }).setView([40.5, -74.5], 8); // Center on NJ-NY-PA region
 
     // Add zoom control
     L.control.zoom({
